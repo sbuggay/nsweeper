@@ -8,7 +8,6 @@
 struct board {
 	char **tiles; //numbers mines blanks
 	char **masks; //# ! ?
-	char **flood;
 	int sizex;
 	int sizey;
 	int mines;
@@ -17,14 +16,15 @@ struct board {
 
 void create_board(struct board *in);
 int check_tile(struct board *in, int x, int y);
+void flood(struct board *in, int x, int y);
 
 int main() {
 	srand(time(NULL));
 
 	struct board temp;
-	temp.sizex = 40;
-	temp.sizey = 14;
-	temp.mines = 100;
+	temp.sizex = 60;
+	temp.sizey = 20;
+	temp.mines = 200;
 	create_board(&temp);
 
 	int cursorx = 0, cursory = 0;
@@ -69,7 +69,9 @@ int main() {
 				}	
 			}
 		}
+
 		mvaddch(cursory, cursorx, 'X');
+
 		mvaddch(23, 79, ' ');
 		refresh();
 		int ch = getch();
@@ -111,8 +113,8 @@ int main() {
 		}	
 		if(ch == 'q')
 		{
-			temp.masks[cursorx][cursory] = ' ';
-			if(temp.tiles[cursorx][cursory] == '*');
+			flood(&temp, cursorx, cursory);
+			
 			//lose mechanics
 		}	
 		if(ch == 'w')
@@ -185,9 +187,10 @@ void create_board(struct board *in) {
 			temp = 0;
 			for(x = -1; x < 2; x++) {
 				for(y = -1; y < 2; y++) {
-					printf("tile : %c %d %d %d %d %d\n", in->tiles[i][j], i, j, x, y, temp);
 					if(!(x == 0 && y == 0))
-						temp += check_tile(in, i + x, j + y);
+						if(check_tile(in, i + x, j + y) == 1)
+							if(in->tiles[i + x][j + y] == '*')
+								temp++;
 				}
 			}
 			if(in->tiles[i][j] != '*' && temp != 0)
@@ -198,9 +201,31 @@ void create_board(struct board *in) {
 }
 
 int check_tile(struct board *in, int x, int y) {
-	if(x > 0 && x < in->sizex)
-		if(y > 0 && y < in->sizey)
-			if(in->tiles[x][y] == '*')
+	if(x >= 0 && x < in->sizex)
+		if(y >= 0 && y < in->sizey)
 				return 1;
-			return 0;
-		}
+	return 0;
+}
+
+void flood(struct board *in, int x, int y) {
+	if(check_tile(in, x, y) == 0 || in->masks[x][y] == ' ')
+		return;
+	if(in->tiles[x][y] != '.') {
+					in->masks[x][y] = ' ';
+			
+
+		return;
+	}
+	in->masks[x][y] = ' ';
+	flood(in, x - 1, y);
+	flood(in, x + 1, y);
+	flood(in, x, y - 1);
+	flood(in, x, y + 1);
+	flood(in, x - 1, y - 1);
+	flood(in, x + 1, y - 1);
+	flood(in, x - 1, y + 1);
+	flood(in, x + 1, y + 1);
+	return;
+}
+
+
