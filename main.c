@@ -1,9 +1,12 @@
+//Devan Buggay
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
 
 #include <ncurses.h>
+
+#define version "0.1.0"
 
 struct board {
 	char **tiles; //numbers mines blanks
@@ -13,21 +16,17 @@ struct board {
 	int mines;
 };
 
-
 void create_board(struct board *in);
 int check_tile(struct board *in, int x, int y);
 void flood(struct board *in, int x, int y);
 
 int main() {
 	srand(time(NULL));
-
 	struct board temp;
-	temp.sizex = 60;
-	temp.sizey = 20;
-	temp.mines = 200;
-	create_board(&temp);
 
 	int cursorx = 0, cursory = 0;
+	int playing = 1, menu = 1;
+	int ch;
 
 	initscr();
 
@@ -39,7 +38,52 @@ int main() {
 
 	init_pair(10, COLOR_WHITE, COLOR_RED); //!
 	init_pair(11, COLOR_WHITE, COLOR_YELLOW); //?
-	while(1) {
+
+
+	while(playing) {
+		while (menu) {
+			clear();
+			printw("nsweeper %s\n", version);
+			printw("a) easy\n");
+			printw("b) medium\n");
+			printw("c) hard\n");
+			printw("d) curstom\n");
+			printw("e) exit\n");
+			refresh();
+			ch = getch();
+			if(ch == 'a') {
+				temp.sizex = 20;
+				temp.sizey = 10;
+				temp.mines = 30;
+				create_board(&temp);
+				menu = 0;
+			}
+			if(ch == 'b') {
+				temp.sizex = 40;
+				temp.sizey = 20;
+				temp.mines = 60;
+				create_board(&temp);
+				menu = 0;
+			}
+			if(ch == 'c') {
+				temp.sizex = 60;
+				temp.sizey = 30;
+				temp.mines = 100;
+				create_board(&temp);
+				menu = 0;
+			}
+			if(ch == 'd') {
+
+			}
+			if(ch == 'e') {
+				menu = 0;
+				playing = 0;
+				endwin();
+				return;
+			}
+		}
+		
+
 		clear();
 		int i, j;
 		for(i = 0; i < temp.sizex; i++) {
@@ -74,7 +118,7 @@ int main() {
 
 		mvaddch(23, 79, ' ');
 		refresh();
-		int ch = getch();
+		ch = getch();
 		if(ch == KEY_LEFT || ch == 'h')
 		{
 			cursorx--;
@@ -113,6 +157,8 @@ int main() {
 		}	
 		if(ch == 'q')
 		{
+			if()
+
 			flood(&temp, cursorx, cursory);
 			
 			//lose mechanics
@@ -136,10 +182,7 @@ int main() {
 
 		//count all flags and all tiles to see if winning move
 	}
-	
-	getch();
 	endwin();
-
 	return 0;
 }
 
@@ -211,9 +254,7 @@ void flood(struct board *in, int x, int y) {
 	if(check_tile(in, x, y) == 0 || in->masks[x][y] == ' ')
 		return;
 	if(in->tiles[x][y] != '.') {
-					in->masks[x][y] = ' ';
-			
-
+		in->masks[x][y] = ' ';
 		return;
 	}
 	in->masks[x][y] = ' ';
